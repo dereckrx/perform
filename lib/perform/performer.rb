@@ -1,11 +1,8 @@
-require 'result'
-require 'perform'
+require 'perform/result'
 
 module Perform
 
   class Performer
-    # include Perform::Module
-
     attr_reader :success_class, :failure_class
 
     def initialize(success_class, failure_class)
@@ -18,17 +15,12 @@ module Perform
         do_call(&block)
       else
         result = reduce(*actions)
-        result[:error] ?
+        result.has_key?(:error) ?
           failure(result) :
           success(result)
       end
     end
     alias_method :[], :call
-
-    # Wraps perform in lambda so it can be called later
-    def prepare(*actions, &block)
-      ->() {perform(*actions, &block)}
-    end
 
     # TODO: test
     def do_call
@@ -47,15 +39,18 @@ module Perform
       func_defs.reduce(initial_context) do |ctx, (func, signature)|
         return ctx if ctx[:error]
 
-        param_keys, return_key = signature.is_a?(Array) ?
-          [signature, nil] :
-          signature.to_a.first
+        if signature
+          param_keys, return_key = signature.is_a?(Array) ?
+              [signature, nil] :
+              signature.to_a.first
+        else
+          param_keys, return_key = [[], nil]
+        end
 
         result = param_keys.empty? ?
           func.call :
           func.call(ctx.slice(*param_keys))
 
-        # TODO: Test when no return key but func returns Failure
         if return_key.nil?
           next either(result,
             ->(_) {ctx},

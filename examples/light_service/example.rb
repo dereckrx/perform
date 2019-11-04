@@ -1,6 +1,5 @@
 require 'light-service'
 
-# GOOD
 class CalculatesTax
   extend LightService::Organizer
 

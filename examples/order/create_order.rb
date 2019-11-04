@@ -1,7 +1,6 @@
-require 'result'
 require 'order'
 require 'railway'
-require 'result'
+require 'perform/result'
 
 class CreateOrder
   extend Perform::Module

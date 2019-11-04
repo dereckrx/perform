@@ -1,6 +1,6 @@
 require 'tax_range'
-require 'result'
-require 'performer'
+require 'perform/result'
+require 'perform/perform'
 
 class CalculatesTax
   extend Perform::Module

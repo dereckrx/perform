@@ -1,5 +1,5 @@
-require 'result'
-require 'performer'
+require 'perform/result'
+require 'perform/performer'
 
 module Perform
 
@@ -12,7 +12,7 @@ module Perform
       Success[value]
     end
 
-    def failure(value)
+    def failure(value = nil)
       Failure[value]
     end
 

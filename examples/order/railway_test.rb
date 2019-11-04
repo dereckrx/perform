@@ -1,19 +1,12 @@
 require 'minitest/autorun'
 require 'railway'
 require 'order'
-require 'performer'
+require 'perform/performer'
 
 describe Perform do
   include Perform::Module
 
   let(:order) {Order.new(region: 'USA')}
-
-  it 'returns success' do
-    result = perform(
-      {order: order},
-    )
-    result.value[:order].must_equal order
-  end
 
   it 'returns value' do
     result = CalculatesTax.call(order)
@@ -92,40 +85,5 @@ describe Perform do
         CalculatesOrderTaxAction.call(order: order)
       end.message.must_equal 'missing keyword: tax_percentage'
     end
-
-    it 'errors if missing promised return key for class' do
-      class NilReturnValue
-        def self.call;
-          nil;
-        end
-      end
-
-      result = perform(
-        {},
-        [NilReturnValue, [] => :tax_percentage]
-      )
-      result.value[:error].message.must_equal "NilReturnValue.call() returned 'nil' instead of a Result for 'tax_percentage'"
-    end
-
-    it 'errors if missing promised return key for proc' do
-      MissingReturnValueProc = ->() {nil}
-
-      result = perform(
-        {},
-        [MissingReturnValueProc, [] => :tax_percentage]
-      )
-      result.value[:error].message.must_equal "Proc.call() returned 'nil' instead of a Result for 'tax_percentage'"
-    end
-
-    it 'errors if missing promised return with parameters in message' do
-      MissingReturnValue = ->(user:) {nil}
-
-      result = perform(
-        {user: {}},
-        [MissingReturnValue, [:user] => :tax_percentage],
-      )
-      result.value[:error].message.must_equal "Proc.call(keyreq,user) returned 'nil' instead of a Result for 'tax_percentage'"
-    end
   end
-
 end
