@@ -102,7 +102,7 @@ The error can be found in `result.value[:error]`.
 
 ### Do-notation-like syntax
 
-Inspired from F# and Haskel do-notation.
+Inspired from F# and Haskell do-notation.
 
 ```ruby
 perform do 
