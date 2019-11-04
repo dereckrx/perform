@@ -1,10 +1,23 @@
 # Perform
 
+A simple way to use the Railway Pattern in ruby. 
+
+
 Inspired by looking at the `light-service` gem and seeing it's use of the 
 Railway Pattern and validating actions inputs and outputs as a good idea, 
 only it's implementation seemed overly complicated. 
 
-Here is an example of a basic `light-service` action:
+I wanted to create a lib that:
+
+* Is simple with no dependencies
+* Has no boilerplate or Action sub-classes
+* Has no DSL or dealing directly with a context object 
+* Can use Plain Old Ruby Objects and Lambdas as actions
+* But still supports the Railway Pattern and input/output validation
+
+## Comparision
+
+For comparison, here is an example of a basic `light-service` action:
 
 ```ruby
 class Foo
@@ -26,27 +39,19 @@ with(a: 1).reduce(
 )
 ```
 
-See examples in `examples/light_services`.
+See more examples in `examples/light_services`.
 
 
-I wanted to create a lib that:
+Now here is the example in `Perform`.
 
-* Is simple with no dependencies
-* Has no boilerplate or Action sub-classes
-* Has no DSL or dealing directly with a context object 
-* Can use Plain Old Ruby Objects and Lambdas as actions
-* But still supports the Railway Pattern and input/output validation
-
-Here is an example in `Perform`.
-
-```ruby 
+```ruby
 include Perform::Module 
 
 class Foo
   def self.call(a:)
     b = a + 1
     b > 9000 ?
-      Failure('It's over 9000!') : 
+      Failure('Its over 9000!') : 
       Success(b)
   end
 end
