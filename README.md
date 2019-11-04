@@ -4,6 +4,28 @@ Inspired by looking at the `light-service` gem and seeing it's use of the
 Railway Pattern and validating actions inputs and outputs as a good idea, 
 only it's implementation seemed overly complicated. 
 
+Here is an example of a basic `light-service` action:
+
+```ruby
+class Foo
+  extend LightService::Action
+  expects :a
+  promises :b
+
+  executed do |context|
+    context.b = context.a + b
+    context.fail!('Its over 9000!') if context.b > 9000
+  end
+end
+
+extend LightService::Organizer
+
+with(a: 1).reduce(
+  Foo,
+  Bar
+)
+```
+
 See examples in `examples/light_services`.
 
 
@@ -15,7 +37,33 @@ I wanted to create a lib that:
 * Can use Plain Old Ruby Objects and Lambdas as actions
 * But still supports the Railway Pattern and input/output validation
 
-`Perform` is what I came up with.
+Here is an example in `Perform`.
+
+```ruby 
+include Perform::Module 
+
+class Foo
+  def self.call(a:)
+    b = a + 1
+    b > 9000 ?
+      Failure('It's over 9000!') : 
+      Success(b)
+  end
+end
+
+Baz = ->(a:, b:) { "#{a} #{b}" }
+
+perform(
+  {a: 1},
+  [Foo, [:a] => :b],
+  [Bar, [:a, :b]]
+)
+```
+
+A basic action in `Perform` can be any object that has a call method. 
+It should return a `Success` or `Failure` result. If your action does not
+return a `Result`, you can wrap the action with `successful` to have it 
+always return a `Success` if the action returns nothing or only a value. 
 
 ## Usage
 
@@ -26,9 +74,9 @@ Pipe a context into a series of actions that can expect parameters and promise r
 ```ruby
 perform(
   {a: 1},
-  [Bar, [:a] => :b ],
+  [Foo, [:a] => :b ],
   [successful(DontCareAboutReturnValue), [:b]],
-  [Baz, [:a, :b]]
+  [Bar, [:a, :b]]
 )
 ```
 
@@ -53,10 +101,10 @@ Inspired from F# and Haskel do-notation.
 
 ```ruby
 perform do 
-  a = unwrap Foo.call(1)
-  b = unwrap Bar.call(a)
+  a = unwrap FetchAValue.call
+  b = unwrap Foo.call(a)
   DontCareAboutReturnValue(b)
-  Baz(a, b)
+  Bar(a, b)
 end
 ```
 
