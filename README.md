@@ -21,23 +21,36 @@ For comparison, here is an example of a basic `light-service` action:
 
 ```ruby
 class Foo
-  extend LightService::Action
-  expects :a
+  extend LightService::Action       # Every action must extend LightService, no POROs
+  expects :a                        # DSL required
   promises :b
 
   executed do |context|
-    context.b = context.a + b
+    context.b = context.a + 1       # must use context instead of normal ruby params
     context.fail!('Its over 9000!') if context.b > 9000
+  end
+end
+
+class Bar
+  extend LightService::Action       # Even simple actions require a lot of boiler plate
+  expects :a, :b
+
+  executed do |context|
+    "#{context.a} #{context.b}"
   end
 end
 
 extend LightService::Organizer
 
-with(a: 1).reduce(
-  Foo,
-  Bar
+with(a: 1).reduce(                  # Hard to see what params are required
+  Foo,                              # or what Actions will return
+  Bar                           
 )
 ```
+
+Using `with` takes `{a: 1}` as it's initial context and is passed to `Foo` 
+who sets `:b` in the context. Then both `:a` and `:b` are passed into 
+`Bar`. But you can't see that without jumping into the Action classes.
 
 See more examples in `examples/light_services`.
 
@@ -45,22 +58,22 @@ See more examples in `examples/light_services`.
 Now here is the example in `Perform`.
 
 ```ruby
-include Perform::Module 
-
-class Foo
-  def self.call(a:)
+class Foo                           # Any PORO class with `call` be an action
+  def self.call(a:)                 # Uses ruby's built in named parameters
     b = a + 1
     b > 9000 ?
-      Failure('Its over 9000!') : 
-      Success(b)
-  end
+      Failure('Its over 9000!') :   # Must return a `Result` class or you
+      Success(b)                    # must wrap it in `successful` when 
+  end                               # calling perform
 end
 
-Baz = ->(a:, b:) { "#{a} #{b}" }
+Bar = ->(a:, b:) { "#{a} #{b}" }    # Lambda can be an action
+
+include Perform::Module
 
 perform(
   {a: 1},
-  [Foo, [:a] => :b],
+  [Foo, [:a] => :b],                # Easy to see required params and return keys
   [Bar, [:a, :b]]
 )
 ```
